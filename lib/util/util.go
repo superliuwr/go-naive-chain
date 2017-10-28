@@ -2,13 +2,10 @@ package util
 
 import (
   "crypto/sha256"
-  "encoding/json"
   "fmt"  
   "log"
   "net/http"
   "time"
-
-  "github.com/superliuwr/go-naive-chain/lib/data"    
 )
 
 // Log returns a wrapped HTTP handler with which every request/response is logged
@@ -21,18 +18,7 @@ func Log(handler http.Handler) http.Handler {
   })
 }
 
-// Hash returns a string of hash value representing the given Block
-func Hash(block data.Block) ([]byte, error) {
-  bytes, err := json.Marshal(block)
-  if err != nil {
-    return nil, fmt.Errorf("unable to generate hash: %s", err.Error())
-  }
-
-  sha := sha256.New()
-  _, err = sha.Write(bytes)
-  if err != nil {
-    return nil, fmt.Errorf("unable to generate hash: %s", err.Error())
-  }
-
-  return sha.Sum(nil), nil
+// HashSha256 returns a hash string of the given bytes using SHA256 algorithm
+func HashSha256(bytes []byte) string {
+  return fmt.Sprintf("%x", sha256.Sum256(bytes))
 }

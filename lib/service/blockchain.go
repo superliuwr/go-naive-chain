@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"	
 	"time"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/superliuwr/go-naive-chain/lib/util"
 )
 
-// BlockChain defines a blockchain implementation
+// BlockChain defines a blockchain service
 type BlockChain struct {
 	blocks []data.Block
 	currentTransactions []data.Transaction
@@ -35,12 +36,12 @@ func (b *BlockChain) AddBlock(proof int, previousHash string) (*data.Block, erro
 			return nil, fmt.Errorf("unable to add new block: genesis block is missing previousHash value")
 		}
 
-		hashBytes, err := util.Hash(b.blocks[chainLength - 1])
+		bytes, err := json.Marshal(b.blocks[chainLength - 1])
 		if err != nil {
 			return nil, fmt.Errorf("unable to add new block: %s", err.Error())
 		}
 
-		previousHash = string(hashBytes)
+		previousHash = util.HashSha256(bytes)
 	}
 
 	block := data.Block {
