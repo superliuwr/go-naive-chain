@@ -30,7 +30,7 @@ func (s *Server) Start() error {
 	http.Handle("/", newHandler(s.Blockchain, s.NodeID))
 
 	// Start HTTP server
-	log.Printf("Starting server on port:8080\n")
+	log.Printf("Starting server on port: %s\n", *s.Port)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		return fmt.Errorf("ListenAndServe: %s", err.Error())
