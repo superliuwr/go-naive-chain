@@ -3,7 +3,9 @@ DOCKER_BUILDER := ${DOCKER_IMAGE}:builder
 BINARY_NAME := go-naive-chain
 
 # Default target (since it's the first without '.' prefix)
-build-all: clean fmt build
+build-local: clean fmt build
+
+build-docker: clean fmt build-linux
 
 clean:
 	rm -f ./go-naive-chain
@@ -13,6 +15,9 @@ fmt:
 
 build:
 	go build ./cmd/go-naive-chain
+
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./cmd/go-naive-chain
 
 run: build
 	./$(BINARY_NAME) 2>&1
