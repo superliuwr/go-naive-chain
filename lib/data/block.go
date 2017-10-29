@@ -18,7 +18,7 @@ type Block struct {
 
 // Transaction defines a transaction
 type Transaction struct {
-	Sender string
-	Recipient string
-	Amount int
+	Sender string `json:"sender"`
+	Recipient string `json:"recipient"`
+	Amount int `json:"amount"`
 }

@@ -9,15 +9,15 @@ import (
 	"github.com/superliuwr/go-naive-chain/lib/util"
 )
 
-// BlockChain defines a blockchain service
-type BlockChain struct {
+// Blockchain defines a blockchain service
+type Blockchain struct {
 	blocks []data.Block
 	currentTransactions []data.Transaction
 }
 
-// NewBlockChain returns a new instance of BlockChain
-func NewBlockChain() *BlockChain {
-	chain := BlockChain{
+// NewBlockchain returns a new instance of BlockChain
+func NewBlockchain() *Blockchain {
+	chain := Blockchain{
 		blocks: []data.Block{},
 		currentTransactions: []data.Transaction{},
 	}
@@ -28,7 +28,7 @@ func NewBlockChain() *BlockChain {
 }
 
 // AddBlock creates a new block and adds it to the chain
-func (b *BlockChain) AddBlock(proof int, previousHash string) (*data.Block, error) {
+func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, error) {
 	chainLength := len(b.blocks)
 	
 	if len(previousHash) == 0 {
@@ -61,23 +61,19 @@ func (b *BlockChain) AddBlock(proof int, previousHash string) (*data.Block, erro
 }
 
 // AddTransaction creates a new transaction and adds it to current transaction list
-func (b *BlockChain) AddTransaction(sender string, recipient string, amount int) (int, error) {
+func (b *Blockchain) AddTransaction(tx data.Transaction) (int, error) {
 	lastBlock, err := b.LastBlock()
 	if err != nil {
 		return 0, fmt.Errorf("unable to add transaction: %s", err.Error())
 	}
 
-	b.currentTransactions = append(b.currentTransactions, data.Transaction{
-		Sender: sender,
-		Recipient: recipient,
-		Amount: amount,
-	})
+	b.currentTransactions = append(b.currentTransactions, tx)
 
 	return lastBlock.Index + 1, nil
 }
 
 // LastBlock returns the last block of the chain
-func (b *BlockChain) LastBlock() (*data.Block, error) {
+func (b *Blockchain) LastBlock() (*data.Block, error) {
 	length := len(b.blocks)
 
 	if length > 0 {
