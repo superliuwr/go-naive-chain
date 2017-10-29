@@ -2,7 +2,7 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"	
+	"fmt"
 	"time"
 
 	"github.com/superliuwr/go-naive-chain/lib/data"
@@ -11,14 +11,14 @@ import (
 
 // Blockchain defines a blockchain service
 type Blockchain struct {
-	blocks []data.Block
+	blocks              []data.Block
 	currentTransactions []data.Transaction
 }
 
 // NewBlockchain returns a new instance of BlockChain
 func NewBlockchain() *Blockchain {
 	chain := Blockchain{
-		blocks: []data.Block{},
+		blocks:              []data.Block{},
 		currentTransactions: []data.Transaction{},
 	}
 
@@ -30,13 +30,13 @@ func NewBlockchain() *Blockchain {
 // AddBlock creates a new block and adds it to the chain
 func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, error) {
 	chainLength := len(b.blocks)
-	
+
 	if len(previousHash) == 0 {
-		if chainLength ==0 {
+		if chainLength == 0 {
 			return nil, fmt.Errorf("unable to add new block: genesis block is missing previousHash value")
 		}
 
-		bytes, err := json.Marshal(b.blocks[chainLength - 1])
+		bytes, err := json.Marshal(b.blocks[chainLength-1])
 		if err != nil {
 			return nil, fmt.Errorf("unable to add new block: %s", err.Error())
 		}
@@ -44,11 +44,11 @@ func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, erro
 		previousHash = util.HashSha256(bytes)
 	}
 
-	block := data.Block {
-		Index: len(b.blocks) + 1,
+	block := data.Block{
+		Index:        len(b.blocks) + 1,
 		PreviousHash: previousHash,
-		Proof: proof,
-		Timestamp: time.Now(),
+		Proof:        proof,
+		Timestamp:    time.Now(),
 		Transactions: []data.Transaction{},
 	}
 
@@ -77,8 +77,8 @@ func (b *Blockchain) LastBlock() (*data.Block, error) {
 	length := len(b.blocks)
 
 	if length > 0 {
-		return &b.blocks[length - 1], nil
+		return &b.blocks[length-1], nil
 	}
-	
+
 	return nil, fmt.Errorf("there is no blocks in the chain")
 }

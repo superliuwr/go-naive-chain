@@ -11,14 +11,14 @@ type Block struct {
 	// PreviousHash is the hash value of the previous block
 	PreviousHash string
 	// Proof is the PoW(Proof of Work) of mining
-	Proof int
-	Timestamp time.Time
+	Proof        int
+	Timestamp    time.Time
 	Transactions []Transaction
 }
 
 // Transaction defines a transaction
 type Transaction struct {
-	Sender string `json:"sender"`
+	Sender    string `json:"sender"`
 	Recipient string `json:"recipient"`
-	Amount int `json:"amount"`
+	Amount    int    `json:"amount"`
 }

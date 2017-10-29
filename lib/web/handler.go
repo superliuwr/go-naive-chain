@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/superliuwr/go-naive-chain/lib/data"	
+	"github.com/superliuwr/go-naive-chain/lib/data"
 	"github.com/superliuwr/go-naive-chain/lib/service"
 )
 
@@ -24,7 +24,7 @@ type response struct {
 
 func newHandler(blockchain *service.Blockchain, nodeID string) http.Handler {
 	h := handler{blockchain, nodeID}
-	
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/transactions/new", buildResponse(h.AddTransaction))
 
@@ -51,9 +51,9 @@ func buildResponse(h func(io.Writer, *http.Request) response) http.HandlerFunc {
 func (h *handler) AddTransaction(w io.Writer, r *http.Request) response {
 	if r.Method != http.MethodPost {
 		return response{
-			value: nil,
+			value:      nil,
 			statusCode: http.StatusMethodNotAllowed,
-			err: fmt.Errorf("method %s not allowd", r.Method),
+			err:        fmt.Errorf("method %s not allowd", r.Method),
 		}
 	}
 

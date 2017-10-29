@@ -8,7 +8,6 @@ import (
 
 // Miner defines a miner service
 type Miner struct {
-
 }
 
 // ProofOfWork returns the solution to the PoW problem
@@ -16,7 +15,7 @@ func (m *Miner) ProofOfWork(lastProof int) int {
 	proof := 0
 
 	for !m.validateProof(lastProof, proof) {
-		proof ++
+		proof++
 	}
 
 	return proof
