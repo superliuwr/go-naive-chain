@@ -48,6 +48,7 @@ func buildResponse(h func(io.Writer, *http.Request) response) http.HandlerFunc {
 	}
 }
 
+// AddTransaction returns a handler for handling adding transaction requests
 func (h *handler) AddTransaction(w io.Writer, r *http.Request) response {
 	if r.Method != http.MethodPost {
 		return response{
@@ -57,7 +58,7 @@ func (h *handler) AddTransaction(w io.Writer, r *http.Request) response {
 		}
 	}
 
-	log.Printf("Adding transaction to the blockchain...\n")
+	log.Println("Adding transaction to the blockchain...")
 
 	var tx data.Transaction
 	err := json.NewDecoder(r.Body).Decode(&tx)
@@ -75,4 +76,55 @@ func (h *handler) AddTransaction(w io.Writer, r *http.Request) response {
 	}
 
 	return response{resp, status, err}
+}
+
+// Mine returns a handler for handling mining requests
+func (h *handler) Mine(w io.Writer, r *http.Request) response {
+	if r.Method != http.MethodGet {
+		return response{
+			value:      nil,
+			statusCode: http.StatusMethodNotAllowed,
+			err:        fmt.Errorf("method %s not allowd", r.Method),
+		}
+	}
+
+	log.Println("Starting mining")
+
+	lastBlock, err := h.blockchain.LastBlock()
+	if err != nil {
+		status := http.StatusInternalServerError
+		log.Printf("there was an error when trying to mine %v\n", err)
+		err = fmt.Errorf("fail to mine")
+
+		return response{nil, status, err}
+	}
+
+	lastProof := lastBlock.Proof
+	miner := service.NewMiner()
+
+	proof := miner.ProofOfWork(lastProof)
+
+	newTX := data.Transaction{Sender: "system", Recipient: h.nodeID, Amount: 1}
+	_, err = h.blockchain.AddTransaction(newTX)
+	if err != nil {
+		status := http.StatusInternalServerError
+		log.Printf("there was an error when trying to mine %v\n", err)
+		err = fmt.Errorf("fail to mine")
+
+		return response{nil, status, err}
+	}
+
+	// TODO calculate hash of last block
+	block, err := h.blockchain.AddBlock(proof, "")
+	if err != nil {
+		status := http.StatusInternalServerError
+		log.Printf("there was an error when trying to mine %v\n", err)
+		err = fmt.Errorf("fail to mine")
+
+		return response{nil, status, err}
+	}
+
+	resp := map[string]interface{}{"message": "New Block Forged", "block": block}
+
+	return response{resp, http.StatusOK, nil}
 }
