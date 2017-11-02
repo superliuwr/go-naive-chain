@@ -26,7 +26,7 @@ func newHandler(blockchain *service.Blockchain, nodeID string) http.Handler {
 	h := handler{blockchain, nodeID}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/transactions/new", buildResponse(h.AddTransaction))
+	mux.HandleFunc("/transaction", buildResponse(h.AddTransaction))
 	mux.HandleFunc("/mine", buildResponse(h.Mine))
 	mux.HandleFunc("/chain", buildResponse(h.Chain))
 
