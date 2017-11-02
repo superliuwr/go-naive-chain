@@ -27,6 +27,7 @@ func newHandler(blockchain *service.Blockchain, nodeID string) http.Handler {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/transactions/new", buildResponse(h.AddTransaction))
+	mux.HandleFunc("/chain", buildResponse(h.Chain))
 
 	return mux
 }
@@ -126,5 +127,21 @@ func (h *handler) Mine(w io.Writer, r *http.Request) response {
 
 	resp := map[string]interface{}{"message": "New Block Forged", "block": block}
 
+	return response{resp, http.StatusOK, nil}
+}
+
+// Chain returns the whole blockchain
+func (h *handler) Chain(w io.Writer, r *http.Request) response {
+	if r.Method != http.MethodGet {
+		return response{
+			value:      nil,
+			statusCode: http.StatusMethodNotAllowed,
+			err:        fmt.Errorf("method %s not allowd", r.Method),
+		}
+	}
+
+	log.Println("Returning the whole blockchain")
+
+	resp := map[string]interface{}{"chain": h.blockchain.Blocks, "length": len(h.blockchain.Blocks)}
 	return response{resp, http.StatusOK, nil}
 }

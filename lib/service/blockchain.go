@@ -11,14 +11,14 @@ import (
 
 // Blockchain defines a blockchain service
 type Blockchain struct {
-	blocks              []data.Block
+	Blocks              []data.Block
 	currentTransactions []data.Transaction
 }
 
 // NewBlockchain returns a new instance of BlockChain
 func NewBlockchain() *Blockchain {
 	chain := Blockchain{
-		blocks:              []data.Block{},
+		Blocks:              []data.Block{},
 		currentTransactions: []data.Transaction{},
 	}
 
@@ -29,14 +29,14 @@ func NewBlockchain() *Blockchain {
 
 // AddBlock creates a new block and adds it to the chain
 func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, error) {
-	chainLength := len(b.blocks)
+	chainLength := len(b.Blocks)
 
 	if len(previousHash) == 0 {
 		if chainLength == 0 {
 			return nil, fmt.Errorf("unable to add new block: genesis block is missing previousHash value")
 		}
 
-		bytes, err := json.Marshal(b.blocks[chainLength-1])
+		bytes, err := json.Marshal(b.Blocks[chainLength-1])
 		if err != nil {
 			return nil, fmt.Errorf("unable to add new block: %s", err.Error())
 		}
@@ -45,7 +45,7 @@ func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, erro
 	}
 
 	block := data.Block{
-		Index:        len(b.blocks) + 1,
+		Index:        len(b.Blocks) + 1,
 		PreviousHash: previousHash,
 		Proof:        proof,
 		Timestamp:    time.Now(),
@@ -55,7 +55,7 @@ func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, erro
 	block.Transactions = append(block.Transactions, b.currentTransactions...)
 	b.currentTransactions = []data.Transaction{}
 
-	b.blocks = append(b.blocks, block)
+	b.Blocks = append(b.Blocks, block)
 
 	return &block, nil
 }
@@ -74,10 +74,10 @@ func (b *Blockchain) AddTransaction(tx data.Transaction) (int, error) {
 
 // LastBlock returns the last block of the chain
 func (b *Blockchain) LastBlock() (*data.Block, error) {
-	length := len(b.blocks)
+	length := len(b.Blocks)
 
 	if length > 0 {
-		return &b.blocks[length-1], nil
+		return &b.Blocks[length-1], nil
 	}
 
 	return nil, fmt.Errorf("there is no blocks in the chain")
