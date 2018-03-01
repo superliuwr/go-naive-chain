@@ -1,5 +1,3 @@
-DOCKER_IMAGE := 175914186171.dkr.ecr.ap-southeast-2.amazonaws.com/audience/api-content
-DOCKER_BUILDER := ${DOCKER_IMAGE}:builder
 BINARY_NAME := go-naive-chain
 
 # Default target (since it's the first without '.' prefix)

@@ -1,1 +1,5 @@
-go-naive-chain
+/go-naive-chain
+
+vendor
+
+.env
