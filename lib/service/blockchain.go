@@ -1,84 +1,112 @@
 package service
 
 import (
-	"encoding/json"
-	"fmt"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"time"
 
-	"github.com/superliuwr/go-naive-chain/lib/data"
-	"github.com/superliuwr/go-naive-chain/lib/util"
+	"github.com/davecgh/go-spew/spew"
 )
 
-// Blockchain defines a blockchain service
-type Blockchain struct {
-	Blocks              []data.Block
-	currentTransactions []data.Transaction
+// Block represents each 'item' in the blockchain
+type Block struct {
+	Index     int
+	Timestamp string
+	Payload   int
+	Hash      string
+	PrevHash  string
 }
 
-// NewBlockchain returns a new instance of BlockChain
-func NewBlockchain() *Blockchain {
-	chain := Blockchain{
-		Blocks:              []data.Block{},
-		currentTransactions: []data.Transaction{},
-	}
-
-	chain.AddBlock(100, "Genesis-Block-Hash")
-
-	return &chain
+// BlockchainService defines a blockchain service
+type BlockchainService struct {
+	chain []*Block
 }
 
-// AddBlock creates a new block and adds it to the chain
-func (b *Blockchain) AddBlock(proof int, previousHash string) (*data.Block, error) {
-	chainLength := len(b.Blocks)
-
-	if len(previousHash) == 0 {
-		if chainLength == 0 {
-			return nil, fmt.Errorf("unable to add new block: genesis block is missing previousHash value")
-		}
-
-		bytes, err := json.Marshal(b.Blocks[chainLength-1])
-		if err != nil {
-			return nil, fmt.Errorf("unable to add new block: %s", err.Error())
-		}
-
-		previousHash = util.HashSha256(bytes)
+// NewBlockchainService returns a new instance of BlockchainService
+func NewBlockchainService() *BlockchainService {
+	service := BlockchainService{
+		chain: newBlockchain(),
 	}
 
-	block := data.Block{
-		Index:        len(b.Blocks) + 1,
-		PreviousHash: previousHash,
-		Proof:        proof,
-		Timestamp:    time.Now(),
-		Transactions: []data.Transaction{},
-	}
-
-	block.Transactions = append(block.Transactions, b.currentTransactions...)
-	b.currentTransactions = []data.Transaction{}
-
-	b.Blocks = append(b.Blocks, block)
-
-	return &block, nil
+	return &service
 }
 
-// AddTransaction creates a new transaction and adds it to current transaction list
-func (b *Blockchain) AddTransaction(tx data.Transaction) (int, error) {
-	lastBlock, err := b.LastBlock()
-	if err != nil {
-		return 0, fmt.Errorf("unable to add transaction: %s", err.Error())
+// Add adds a new block for the given payload
+func (s *BlockchainService) Add(payload int) (Block, error) {
+	newBlock := s.generateBlock(s.chain[len(s.chain)-1], payload)
+
+	if isBlockValid(&newBlock, s.chain[len(s.chain)-1]) {
+		newBlockchain := append(s.chain, &newBlock)
+		s.replaceChain(newBlockchain)
+		spew.Dump(s.chain)
+
+		return newBlock, nil
 	}
 
-	b.currentTransactions = append(b.currentTransactions, tx)
-
-	return lastBlock.Index + 1, nil
+	return Block{}, errors.New("Failed to add new block for payload")
 }
 
-// LastBlock returns the last block of the chain
-func (b *Blockchain) LastBlock() (*data.Block, error) {
-	length := len(b.Blocks)
+// create a new block using previous block's hash
+func (s *BlockchainService) generateBlock(oldBlock *Block, payload int) Block {
+	var newBlock Block
 
-	if length > 0 {
-		return &b.Blocks[length-1], nil
+	t := time.Now()
+
+	newBlock.Index = oldBlock.Index + 1
+	newBlock.Timestamp = t.String()
+	newBlock.Payload = payload
+	newBlock.PrevHash = oldBlock.Hash
+	newBlock.Hash = calculateHash(&newBlock)
+
+	return newBlock
+}
+
+// make sure the chain we're checking is longer than the current blockchain
+func (s *BlockchainService) replaceChain(newChain []*Block) {
+	if len(newChain) > len(s.chain) {
+		s.chain = newChain
+	}
+}
+
+// Chain returns the whole chain
+func (s *BlockchainService) Chain() []*Block {
+	return s.chain
+}
+
+func newBlockchain() []*Block {
+	chain := []*Block{}
+
+	t := time.Now()
+	genesisBlock := Block{0, t.String(), 0, "Genesis-Block", ""}
+	spew.Dump(genesisBlock)
+
+	return append(chain, &genesisBlock)
+}
+
+// make sure block is valid by checking index, and comparing the hash of the previous block
+func isBlockValid(newBlock *Block, oldBlock *Block) bool {
+	if oldBlock.Index+1 != newBlock.Index {
+		return false
 	}
 
-	return nil, fmt.Errorf("there is no blocks in the chain")
+	if oldBlock.Hash != newBlock.PrevHash {
+		return false
+	}
+
+	if calculateHash(newBlock) != newBlock.Hash {
+		return false
+	}
+
+	return true
+}
+
+// SHA256 hasing
+func calculateHash(block *Block) string {
+	record := string(block.Index) + block.Timestamp + string(block.Payload) + block.PrevHash
+	h := sha256.New()
+	h.Write([]byte(record))
+	hashed := h.Sum(nil)
+
+	return hex.EncodeToString(hashed)
 }
