@@ -35,7 +35,7 @@ func NewServer(port string, blockchainService *service.BlockchainService) *Serve
 func (s *Server) Start() error {
 	mux := s.makeMuxRouter()
 
-	log.Println("Listening on ", s.port)
+	log.Println("Listening for HTTP connections on ", s.port)
 
 	httpServer := &http.Server{
 		Addr:           ":" + s.port,

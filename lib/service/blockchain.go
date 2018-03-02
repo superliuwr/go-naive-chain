@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -20,12 +21,14 @@ type Block struct {
 
 // BlockchainService defines a blockchain service
 type BlockchainService struct {
+	mutex *sync.Mutex
 	chain []*Block
 }
 
 // NewBlockchainService returns a new instance of BlockchainService
 func NewBlockchainService() *BlockchainService {
 	service := BlockchainService{
+		mutex: &sync.Mutex{},
 		chain: newBlockchain(),
 	}
 
@@ -34,6 +37,8 @@ func NewBlockchainService() *BlockchainService {
 
 // Add adds a new block for the given payload
 func (s *BlockchainService) Add(payload int) (Block, error) {
+	s.mutex.Lock()
+
 	newBlock := s.generateBlock(s.chain[len(s.chain)-1], payload)
 
 	if isBlockValid(&newBlock, s.chain[len(s.chain)-1]) {
@@ -41,8 +46,12 @@ func (s *BlockchainService) Add(payload int) (Block, error) {
 		s.replaceChain(newBlockchain)
 		spew.Dump(s.chain)
 
+		s.mutex.Unlock()
+
 		return newBlock, nil
 	}
+
+	s.mutex.Unlock()
 
 	return Block{}, errors.New("Failed to add new block for payload")
 }
